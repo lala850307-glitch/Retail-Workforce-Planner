@@ -154,31 +154,25 @@
     <script>
         // 完全保留你要求的計算邏輯
         async function init() {
-    try {
-        const r = await fetch('/api/init_benchmark');
-        if (!r.ok) throw new Error("後端 API 無回應");
-        
-        const d = await r.json();
-        if (d.error) { alert(d.error); return; }
-        
-        // 加上 || 0 確保即使後端沒給資料，toLocaleString() 也寫得出來
-        document.getElementById('oCR').innerText = (d.cr || 0) + ' %';
-        document.getElementById('oAOV').innerText = '$' + (d.aov || 0).toLocaleString();
-        document.getElementById('oFT').innerText = d.ft || 0;
-        document.getElementById('oPT').innerText = d.pt || 0;
-        document.getElementById('oCost').innerText = '$' + (d.waste_cost || 0).toLocaleString();
-        document.getElementById('oHours').innerText = (d.waste_hours || 0).toLocaleString() + ' 小時';
+            try {
+                // TODO: 這裡維持指向你的 API
+                const r = await fetch('/api/init_benchmark');
+                const d = await r.json();
+                if (d.error) { alert(d.error); return; }
+                
+                document.getElementById('oCR').innerText = d.cr + ' %';
+                document.getElementById('oAOV').innerText = '$' + d.aov.toLocaleString();
+                document.getElementById('oFT').innerText = d.ft;
+                document.getElementById('oPT').innerText = d.pt;
+                document.getElementById('oCost').innerText = '$' + d.waste_cost.toLocaleString();
+                document.getElementById('oHours').innerText = d.waste_hours.toLocaleString() + ' 小時';
 
-        document.getElementById('inCR').value = d.cr || 0;
-        document.getElementById('inAOV').value = d.aov || 0;
-        document.getElementById('inFT').value = d.ft || 0;
-        document.getElementById('inPT').value = d.pt || 0;
-    } catch (e) { 
-        console.error("初始化失敗", e); 
-        // 不要只在 Console 報錯，這樣使用者不知道出事了
-        alert("基準數據加載失敗，請檢查網路連線或後端服務。");
-    }
-}
+                document.getElementById('inCR').value = d.cr;
+                document.getElementById('inAOV').value = d.aov;
+                document.getElementById('inFT').value = d.ft;
+                document.getElementById('inPT').value = d.pt;
+            } catch (e) { console.error("初始化失敗", e); }
+        }
 
         document.getElementById('auditForm').addEventListener('submit', async (e) => {
             e.preventDefault();

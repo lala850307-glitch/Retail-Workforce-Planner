@@ -2,8 +2,18 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>🔮 AI 門市智慧排班預測</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智慧排班預測 - Retail AI Intelligence</title>
     <link rel="stylesheet" href="{{ url_for('stylesheet', path='styles.css') }}">
+    <style>
+        /* 補強表格內的週末紅字與特定背景 */
+        .weekend-text { color: #e74c3c !important; font-weight: 700; }
+        .staff-total-cell { 
+            font-weight: 700; 
+            background: linear-gradient(135deg, #420d09 0%, #5a1a12 50%, #420d09 100%); 
+            color: #ffffff !important; 
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar">
@@ -11,94 +21,151 @@
             <div class="nav-logo">RETAIL AI</div>
             <ul class="nav-menu">
                 <li><a href="/" class="nav-link">首頁</a></li>
-                <li><a href="/system_architecture" class="nav-link">系統架構圖</a></li>
+                <li><a href="/system-architecture" class="nav-link">系統架構圖</a></li>
                 <li><a href="/Labor_Efficiency_Audit" class="nav-link">人力效率審計</a></li>
-                <li><a href="/pages/forecast" class="nav-link active">智慧排班預測</a></li>
+                <li><a href="/smart_staffing_forecast" class="nav-link active">智慧排班預測</a></li>
             </ul>
         </div>
     </nav>
 
     <main class="container">
-        <section class="hero">
-            <p class="hero-label">智慧排班預測</p>
-            <h1 class="hero-title">🔮 AI 門市智慧排班預測</h1>
-            <p class="hero-description">結合歷史業績與 AI 模型，自動產出最優化的人力需求排班預測。</p>
-        </section>
+        <section style="padding: 5rem 0;">
+            <h1 style="font-size: 3.5rem; font-weight: 700; color: #1a1a1a; margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem; letter-spacing: -0.01em;">
+                <span style="font-size: 2.5rem;">🔮</span>
+                智慧排班預測
+            </h1>
+            <p style="font-size: 1.1rem; color: #333333; margin-bottom: 3rem; line-height: 1.8;">
+                結合歷史業績與 AI 模型，自動產出最優化的人力需求排班預測
+            </p>
 
-        <div class="card">
-            <div class="card-header">
-                <h2>排班預測設定</h2>
-            </div>
-            <form method="post" action="/forecast/run">
-                <div class="form-group"><label>店別</label>
-                <select class="form-select" name="store_id" id="store_id" onchange="updateLYAOV()">
-                    <option value="1" {% if store_id == 1 %}selected{% endif %}>忠孝門市 #1</option>
-                    <option value="2" {% if store_id == 2 or not store_id %}selected{% endif %}>忠孝Sogo #2</option>
-                    <option value="3" {% if store_id == 3 %}selected{% endif %}>復興Sogo #3</option>
-                    <option value="4" {% if store_id == 4 %}selected{% endif %}>敦化Sogo #4</option>
-                    <option value="5" {% if store_id == 5 %}selected{% endif %}>天母Sogo #5</option>
-                </select>
-            </div>
-            
-            <div class="form-group"><label>月份</label>
-                <select class="form-select" name="month" id="month" onchange="updateLYAOV()">
-                    {{ month_options | safe }}
-                </select>
-            </div>
-            <div class="form-group"><label>月業績目標</label><input class="form-input" type="number" name="goal" value="{{ goal | default(3000000) }}"></div>
-            <div class="form-group"><label>設定今年 AOV</label><input class="form-input" type="number" name="target_aov" id="target_aov" value="{{ final_aov | default('') }}" placeholder="請參考下方數據"></div>
-                <button class="btn btn-primary" type="submit">執行規劃</button>
-            </form>
-        </div>
-        
-        <div id="aov_display_area">
-            {% if mode_text %}
-                <div class="{% if '活動' in mode_text %}campaign-box{% else %}info-box{% endif %}">
-                    模式：{{ mode_text }} | 本次設定 AOV: ${{ "{:,}".format(final_aov) }} (去年同期: ${{ "{:,}".format(ly_aov) }})
+            <div class="card" style="margin-bottom: 2rem;">
+                <div class="card-header">
+                    <h2>排班預測設定</h2>
                 </div>
-            {% endif %}
-        </div>
-        
-        {% if results %}
-        <table>
-            <thead>
-                <tr><th>日期</th><th>星期</th><th>預計業績</th><th>預計成交</th><th>早</th><th>中</th><th>晚</th><th>全天建議</th></tr>
-            </thead>
-            <tbody>
-                {% for r in results %}
-                <tr>
-                    <td>{{ r.date }}</td>
-                    <td class="{% if r.weekday in ['Sat', 'Sun'] %}weekend{% endif %}">{{ r.weekday }}</td>
-                    <td>${{ "{:,}".format(r.sales) }}</td>
-                    <td>{{ r.trans }}</td>
-                    <td>{{ r.m }}</td>
-                    <td>{{ r.a }}</td>
-                    <td>{{ r.e }}</td>
-                    <td style="font-weight:bold; background: #fff9c4;">{{ r.staff }}人</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% endif %}
 
+                <form action="/forecast/run" method="post" id="forecastForm" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
+                    <div class="form-group">
+                        <label class="form-label">店別</label>
+                        <select name="store_id" id="store_id" class="form-select" onchange="updateLYAOV()">
+                            <option value="1" {% if store_id == 1 %}selected{% endif %}>忠孝門市 #1</option>
+                            <option value="2" {% if store_id == 2 or not store_id %}selected{% endif %}>忠孝Sogo #2</option>
+                            <option value="3" {% if store_id == 3 %}selected{% endif %}>復興Sogo #3</option>
+                            <option value="4" {% if store_id == 4 %}selected{% endif %}>敦化Sogo #4</option>
+                            <option value="5" {% if store_id == 5 %}selected{% endif %}>天母Sogo #5</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">月份</label>
+                        <select name="month" id="month" class="form-select" onchange="updateLYAOV()">
+                            {{ month_options | safe }}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">月業績目標 ($)</label>
+                        <input type="number" name="goal" class="form-input" value="{{ goal | default(3000000) }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">設定今年 AOV ($)</label>
+                        <input type="number" name="target_aov" id="target_aov" class="form-input" value="{{ final_aov | default('') }}" placeholder="請參考下方數據">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="grid-column: 1 / -1; padding: 1rem; font-size: 1rem;">
+                        執行規劃
+                    </button>
+                </form>
+
+                <div id="aov_display_area">
+                    {% if mode_text %}
+                        <div style="padding: 1.5rem; background: {% if '活動' in mode_text %}#fff5f5{% else %}#eef7ff{% endif %}; border-left: 5px solid {% if '活動' in mode_text %}#e74c3c{% else %}#3498db{% endif %}; border-radius: 8px; margin-bottom: 1.5rem;">
+                            <p style="color: #333333; font-weight: 600; margin: 0;">
+                                💡 模式：{{ mode_text }} | 本次設定 AOV: ${{ "{:,}".format(final_aov) }} (去年同期: ${{ "{:,}".format(ly_aov) }})
+                            </p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if results %}
+            <div id="resultsContainer">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>排班預測結果</h2>
+                    </div>
+
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
+                            <thead>
+                                <tr style="background: linear-gradient(135deg, #420d09 0%, #5a1a12 50%, #420d09 100%); color: #ffffff;">
+                                    <th style="padding: 1rem; text-align: left; font-weight: 700;">日期</th>
+                                    <th style="padding: 1rem; text-align: center; font-weight: 700;">星期</th>
+                                    <th style="padding: 1rem; text-align: center; font-weight: 700;">預計業績</th>
+                                    <th style="padding: 1rem; text-align: center; font-weight: 700;">預計成交</th>
+                                    <th style="padding: 1rem; text-align: center; font-weight: 700;">早班</th>
+                                    <th style="padding: 1rem; text-align: center; font-weight: 700;">中班</th>
+                                    <th style="padding: 1rem; text-align: center; font-weight: 700;">晚班</th>
+                                    <th style="padding: 1rem; text-align: center; font-weight: 700; background: #a0522d;">全天建議</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for r in results %}
+                                <tr style="border-bottom: 1px solid #e0e0e0;">
+                                    <td style="padding: 1rem; text-align: left; color: #333333;">{{ r.date }}</td>
+                                    <td class="{% if r.weekday in ['Sat', 'Sun'] %}weekend-text{% endif %}" style="padding: 1rem; text-align: center; color: #333333;">{{ r.weekday }}</td>
+                                    <td style="padding: 1rem; text-align: center; color: #333333;">${{ "{:,}".format(r.sales) }}</td>
+                                    <td style="padding: 1rem; text-align: center; color: #333333;">{{ r.trans }}</td>
+                                    <td style="padding: 1rem; text-align: center; color: #333333;">{{ r.m }}</td>
+                                    <td style="padding: 1rem; text-align: center; color: #333333;">{{ r.a }}</td>
+                                    <td style="padding: 1rem; text-align: center; color: #333333;">{{ r.e }}</td>
+                                    <td class="staff-total-cell" style="padding: 1rem; text-align: center;">{{ r.staff }}人</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div id="emptyState" style="text-align: center; padding: 3rem; color: #333333;">
+                <p style="font-size: 1.1rem; margin-bottom: 1rem;">📊 請填寫上方表單並點擊「執行規劃」開始排班預測</p>
+                <p style="font-size: 0.95rem; color: #666666;">系統將根據您的店別、月份、業績目標和 AOV 設定，自動生成最優化的排班方案</p>
+            </div>
+            {% endif %}
+        </section>
     </main>
+
+    <footer class="footer">
+        <p>&copy; 2026 Retail AI Intelligence. 零售人力決策系統。</p>
+    </footer>
+
     <script>
+        // 💡 保持你原本的 JS 查詢邏輯，僅修改 DOM ID 對齊樣式
         async function updateLYAOV() {
-            // 💡 修正 1：JS 恢復正常的單括號
             const sid = document.getElementById('store_id').value;
             const m = document.getElementById('month').value;
             const displayArea = document.getElementById('aov_display_area');
-            displayArea.innerHTML = '<div class="info-box">⏳ 正在查詢去年數據...</div>';
+            
+            displayArea.innerHTML = '<div style="padding: 1.5rem; background: #eef7ff; border-left: 5px solid #3498db; border-radius: 8px; margin-bottom: 1.5rem;"><p style="color: #333333; font-weight: 600; margin: 0;">⏳ 正在查詢去年數據...</p></div>';
+            
             try {
-                // 💡 修正 2：JS 變數恢復正常的 ${var} 寫法
+                // 💡 這裡指向你 main.py 中定義的 AOV 查詢 API
                 const res = await fetch(`/forecast/get_ly_aov?store_id=${sid}&month=${m}`);
                 const data = await res.json();
-                displayArea.innerHTML = `<div class="info-box">💡 去年同期平均 AOV 為 <span style="color:#27ae60; font-weight:bold;">$${data.aov.toLocaleString()}</span></div>`;
-                document.getElementById('target_aov').placeholder = `去年平均: ${data.aov}`;
+                
+                displayArea.innerHTML = `
+                    <div style="padding: 1.5rem; background: linear-gradient(135deg, #ffffff 0%, #faf8f6 25%, #f5f0eb 50%, #faf8f6 75%, #ffffff 100%); border-left: 5px solid #a0522d; border-radius: 8px; margin-bottom: 1.5rem;">
+                        <p style="color: #333333; font-weight: 600; margin: 0;">💡 去年同期平均 AOV 為 <span style="color: #a0522d; font-weight: 700;">$${data.aov.toLocaleString()}</span></p>
+                    </div>`;
+                document.getElementById('target_aov').placeholder = `去年平均: $${data.aov.toLocaleString()}`;
             } catch (e) { 
-                displayArea.innerHTML = '<div class="info-box" style="color:red;">⚠️ 無法取得去年數據</div>'; 
+                displayArea.innerHTML = '<div style="padding: 1.5rem; background: #fff5f5; border-left: 5px solid #e74c3c; border-radius: 8px; margin-bottom: 1.5rem;"><p style="color: #e74c3c; font-weight: 600; margin: 0;">⚠️ 無法取得去年數據</p></div>'; 
             }
         }
+
+        // 頁面初次載入執行一次
+        window.onload = updateLYAOV;
     </script>
 </body>
 </html>
