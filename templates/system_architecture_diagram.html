@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系統架構圖 - Retail AI Intelligence</title>
+    <link rel="stylesheet" href="{{ url_for('stylesheet', path='styles.css') }}">
+   <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        .mermaid {
+            display: flex;
+            justify-content: center;
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 8px 30px rgba(66, 13, 9, 0.1);
+        }
+
+        .architecture-section {
+            margin-bottom: 3rem;
+        }
+
+        .architecture-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            letter-spacing: -0.01em;
+        }
+
+        .architecture-description {
+            font-size: 1rem;
+            color: #333333;
+            line-height: 1.8;
+            margin-bottom: 2rem;
+            text-align: center;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .layer-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .layer-card {
+            background: var(--primary-red);
+            border: 2px solid var(--primary-red);
+            border-radius: 8px;
+            padding: 2.5rem;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 6px 20px rgba(160, 82, 45, 0.2);
+        }
+
+        .layer-card:hover {
+            border-color: var(--dark-red);
+            box-shadow: 0 12px 30px rgba(139, 69, 19, 0.3);
+            transform: translateY(-8px);
+        }
+
+        .layer-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .layer-card h3 {
+            font-size: 1.3rem;
+            color: #ffffff;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .layer-card p {
+            font-size: 0.95rem;
+            color: #ffffff;
+            line-height: 1.7;
+        }
+
+        .component-list {
+            text-align: left;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .component-item {
+            font-size: 0.9rem;
+            color: #ffffff;
+            margin: 0.75rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .component-item::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: #ffffff;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">RETAIL AI</div>
+            <ul class="nav-menu">
+                <li><a href="/index.html" class="nav-link">首頁</a></li>
+                <li><a href="/system_architecture_diagram.html" class="nav-link active">系統架構圖</a></li>
+                <li><a href="/labor_efficiency_audit.html" class="nav-link">人力效率審計</a></li>
+                <li><a href="/forecast.html" class="nav-link">智慧排班預測</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container">
+        <section style="padding: 5rem 0;">
+            <h1 style="font-size: 3.5rem; font-weight: 700; color: #1a1a1a; margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem; letter-spacing: -0.01em; justify-content: center;">
+                <span style="font-size: 2.5rem;">🏗️</span>
+                系統架構圖
+            </h1>
+            <p style="font-size: 1.1rem; color: #333333; margin-bottom: 3rem; line-height: 1.8; text-align: center;">
+                Retail AI Intelligence 零售人力決策系統的完整技術架構
+            </p>
+
+            <!-- Architecture Diagram -->
+            <div class="architecture-section">
+                <div class="architecture-title">系統流程圖</div>
+                <div class="mermaid">
+flowchart TD
+
+subgraph group_ui["Presentation"]
+  node_index_page["Home page<br/>template<br/>[index.html]"]
+  node_forecast_page["Forecast UI<br/>template"]
+  node_audit_page["Audit UI<br/>template"]
+  node_retail_js["Browser JS<br/>client script<br/>[retail.js]"]
+end
+
+subgraph group_services["Runtime Services"]
+  node_main["Main app<br/>entrypoint<br/>[main.py]"]
+  node_forecast_service["Forecast API"]
+  node_audit_service["Audit API<br/>[audit_service.py]"]
+end
+
+subgraph group_offline["Offline Pipelines"]
+  node_train_pipeline["Training pipeline<br/>ml pipeline"]
+  node_forecast_engine["Batch forecast<br/>batch job"]
+  node_data_simulator["Data simulator"]
+  node_master_data["Master data<br/>data generator<br/>[gen_master_data.py]"]
+  node_ops_2025["2025 ops<br/>data generator<br/>[gen_2025_ops.py]"]
+  node_ops_2026["2026 ops<br/>data generator<br/>[gen_2026_ops.py]"]
+end
+
+subgraph group_artifacts["Model Artifacts"]
+  node_model_file[("Model pickle<br/>artifact")]
+  node_feature_file[("Feature schema<br/>artifact")]
+  node_output_csv["Forecast CSV<br/>batch output"]
+end
+
+node_main -->|"serves"| node_index_page
+node_main -->|"serves"| node_forecast_page
+node_main -->|"serves"| node_audit_page
+
+node_forecast_page -->|"uses"| node_retail_js
+node_audit_page -->|"uses"| node_retail_js
+
+node_main -->|"calls"| node_forecast_service
+node_main -->|"calls"| node_audit_service
+
+node_forecast_service -->|"loads"| node_model_file
+node_forecast_service -->|"loads"| node_feature_file
+
+node_audit_service -.->|"reuses"| node_forecast_service
+
+node_train_pipeline -->|"trains on"| node_master_data
+node_train_pipeline -->|"ingests"| node_ops_2025
+node_train_pipeline -->|"ingests"| node_ops_2026
+
+node_train_pipeline -->|"writes"| node_model_file
+node_train_pipeline -->|"writes"| node_feature_file
+
+node_data_simulator -->|"generates"| node_ops_2026
+
+node_forecast_engine -->|"uses"| node_model_file
+node_forecast_engine -->|"uses"| node_feature_file
+node_forecast_engine -->|"produces"| node_output_csv
+
+node_forecast_engine -.->|"consumes"| node_data_simulator
+
+click node_main "https://github.com/lala850307-glitch/retail-workforce-planner/blob/main/main.py"
+click node_forecast_service "https://github.com/lala850307-glitch/retail-workforce-planner/blob/main/api/forecast_service.py"
+click node_audit_service "https://github.com/lala850307-glitch/retail-workforce-planner/blob/main/api/audit_service.py"
+
+click node_index_page "https://github.com/lala850307-glitch/retail-workforce-planner/blob/main/templates/index.html"
+click node_forecast_page "https://github.com/lala850307-glitch/retail-workforce-planner/blob/main/templates/smart_staffing_forecast.html"
+click node_audit_page "https://github.com/lala850307-glitch/retail-workforce-planner/blob/main/templates/Labor%20Efficiency%20Audit.html"
+click node_retail_js "https://github.com/lala850307-glitch/retail-workforce-planner/blob/main/api/retail.js"
+
+click node_train_pipeline "https://github.com/lala850307-glitch/retail-workforce-planner/blob/main/scripts/model_training_pipeline.py"
+click node_forecast_engine "https://github.com/lala850307-glitch/retail-workforce-planner/blob/main/scripts/q2_forecast_engine.py"
+click node_data_simulator "https://github.com/lala850307-glitch/retail-workforce-planner/blob/main/scripts/data_simulator_2026.py"
+
+click node_master_data "https://github.com/lala850307-glitch/retail-workforce-planner/blob/main/data_scripts/gen_master_data.py"
+click node_ops_2025 "https://github.com/lala850307-glitch/retail-workforce-planner/blob/main/data_scripts/gen_2025_ops.py"
+click node_ops_2026 "https://github.com/lala850307-glitch/retail-workforce-planner/blob/main/data_scripts/gen_2026_ops.py"
+
+click node_model_file "https://github.com/lala850307-glitch/retail-workforce-planner/blob/main/models/retail_staffing_model_v1.pkl"
+click node_feature_file "https://github.com/lala850307-glitch/retail-workforce-planner/blob/main/models/feature_columns.pkl"
+click node_output_csv "https://github.com/lala850307-glitch/retail-workforce-planner/blob/main/output_data/2026_Q2_Hybrid_Forecast.csv"
+
+classDef toneBlue fill:#dbeafe,stroke:#2563eb,stroke-width:1.5px,color:#172554
+classDef toneAmber fill:#fef3c7,stroke:#d97706,stroke-width:1.5px,color:#78350f
+classDef toneMint fill:#dcfce7,stroke:#16a34a,stroke-width:1.5px,color:#14532d
+classDef toneRose fill:#ffe4e6,stroke:#e11d48,stroke-width:1.5px,color:#881337
+
+class node_index_page,node_forecast_page,node_audit_page,node_retail_js toneBlue
+class node_main,node_forecast_service,node_audit_service toneAmber
+class node_train_pipeline,node_forecast_engine,node_data_simulator,node_master_data,node_ops_2025,node_ops_2026 toneMint
+class node_model_file,node_feature_file,node_output_csv toneRose
+
+                </div>
+            </div>
+
+            <!-- Architecture Layers -->
+            <div class="architecture-section">
+                <div class="architecture-title">系統架構分層</div>
+                <div class="architecture-description">
+                    Retail AI Intelligence 採用分層架構設計，將系統分為四個主要層級，每層各司其職，協同運作。
+                </div>
+
+                <div class="layer-grid">
+                    <!-- Presentation Layer -->
+                    <div class="layer-card">
+                        <div class="layer-icon">📱</div>
+                        <h3>表現層</h3>
+                        <p>用戶交互界面與前端應用</p>
+                        <div class="component-list">
+                            <div class="component-item">首頁 (index.html)</div>
+                            <div class="component-item">人力審計頁面</div>
+                            <div class="component-item">排班預測頁面</div>
+                            <div class="component-item">客戶端腳本</div>
+                        </div>
+                    </div>
+
+                    <!-- Runtime Services Layer -->
+                    <div class="layer-card">
+                        <div class="layer-icon">⚙️</div>
+                        <h3>運行時服務層</h3>
+                        <p>實時 API 與業務邏輯</p>
+                        <div class="component-list">
+                            <div class="component-item">主應用入口</div>
+                            <div class="component-item">排班預測 API</div>
+                            <div class="component-item">人力審計 API</div>
+                            <div class="component-item">模型推理引擎</div>
+                        </div>
+                    </div>
+
+                    <!-- Offline Pipelines Layer -->
+                    <div class="layer-card">
+                        <div class="layer-icon">🔄</div>
+                        <h3>離線處理層</h3>
+                        <p>批量計算與數據管道</p>
+                        <div class="component-list">
+                            <div class="component-item">模型訓練管道</div>
+                            <div class="component-item">批量預測引擎</div>
+                            <div class="component-item">數據模擬器</div>
+                            <div class="component-item">數據生成腳本</div>
+                        </div>
+                    </div>
+
+                    <!-- Model Artifacts Layer -->
+                    <div class="layer-card">
+                        <div class="layer-icon">💾</div>
+                        <h3>模型製品層</h3>
+                        <p>訓練模型與特徵定義</p>
+                        <div class="component-list">
+                            <div class="component-item">模型文件 (.pkl)</div>
+                            <div class="component-item">特徵架構 (.pkl)</div>
+                            <div class="component-item">預測結果 (CSV)</div>
+                            <div class="component-item">版本控制</div>
+                        </div>
+                    </div>
+
+                    <!-- Data Layer -->
+                    <div class="layer-card">
+                        <div class="layer-icon">📊</div>
+                        <h3>數據層</h3>
+                        <p>原始數據與訓練集</p>
+                        <div class="component-list">
+                            <div class="component-item">主數據 (Master Data)</div>
+                            <div class="component-item">2025 運營數據</div>
+                            <div class="component-item">2026 運營數據</div>
+                            <div class="component-item">模擬數據集</div>
+                        </div>
+                    </div>
+
+                    <!-- Integration Layer -->
+                    <div class="layer-card">
+                        <div class="layer-icon">🔗</div>
+                        <h3>集成層</h3>
+                        <p>系統間通信與協調</p>
+                        <div class="component-list">
+                            <div class="component-item">API 調用</div>
+                            <div class="component-item">數據流轉</div>
+                            <div class="component-item">模型加載</div>
+                            <div class="component-item">結果輸出</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Flow -->
+            <div class="architecture-section">
+                <div class="architecture-title">數據流轉流程</div>
+                <div class="architecture-description">
+                    系統通過三個主要流程實現完整的人力決策功能
+                </div>
+
+                <div class="layer-grid">
+                    <div class="layer-card">
+                        <div class="layer-icon">🎯</div>
+                        <h3>實時預測流程</h3>
+                        <p style="margin-bottom: 1.5rem;">用戶通過前端提交參數，系統實時調用 API 進行預測</p>
+                        <div class="component-list">
+                            <div class="component-item">用戶輸入參數</div>
+                            <div class="component-item">前端驗證數據</div>
+                            <div class="component-item">調用預測 API</div>
+                            <div class="component-item">模型推理</div>
+                            <div class="component-item">返回結果</div>
+                            <div class="component-item">前端展示</div>
+                        </div>
+                    </div>
+
+                    <div class="layer-card">
+                        <div class="layer-icon">📈</div>
+                        <h3>批量訓練流程</h3>
+                        <p style="margin-bottom: 1.5rem;">離線定期訓練模型，更新模型製品</p>
+                        <div class="component-list">
+                            <div class="component-item">加載訓練數據</div>
+                            <div class="component-item">特徵工程</div>
+                            <div class="component-item">模型訓練</div>
+                            <div class="component-item">模型評估</div>
+                            <div class="component-item">保存製品</div>
+                            <div class="component-item">版本更新</div>
+                        </div>
+                    </div>
+
+                    <div class="layer-card">
+                        <div class="layer-icon">🔄</div>
+                        <h3>批量預測流程</h3>
+                        <p style="margin-bottom: 1.5rem;">定期批量生成預測結果供分析使用</p>
+                        <div class="component-list">
+                            <div class="component-item">加載模型</div>
+                            <div class="component-item">準備批量數據</div>
+                            <div class="component-item">批量推理</div>
+                            <div class="component-item">結果聚合</div>
+                            <div class="component-item">輸出 CSV</div>
+                            <div class="component-item">數據存儲</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Features -->
+            <div class="card" style="margin-top: 3rem;">
+                <div class="card-header">
+                    <h2>架構特點</h2>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                    <div>
+                        <h3 style="color: #1a1a1a; margin-bottom: 1.5rem; font-size: 1.2rem; font-weight: 700;">🏗️ 分層設計</h3>
+                        <p style="color: #333333; line-height: 1.8;">
+                            系統採用清晰的分層架構，表現層、服務層、離線層、數據層各司其職，便於維護、擴展和測試。
+                        </p>
+                    </div>
+
+                    <div>
+                        <h3 style="color: #1a1a1a; margin-bottom: 1.5rem; font-size: 1.2rem; font-weight: 700;">⚡ 實時與批量結合</h3>
+                        <p style="color: #333333; line-height: 1.8;">
+                            實時 API 滿足即時決策需求，批量管道支持定期模型訓練和預測，兩者協同運作。
+                        </p>
+                    </div>
+
+                    <div>
+                        <h3 style="color: #1a1a1a; margin-bottom: 1.5rem; font-size: 1.2rem; font-weight: 700;">🔄 模型復用</h3>
+                        <p style="color: #333333; line-height: 1.8;">
+                            人力審計 API 複用排班預測 API 的模型，避免重複訓練，提高效率。
+                        </p>
+                    </div>
+
+                    <div>
+                        <h3 style="color: #1a1a1a; margin-bottom: 1.5rem; font-size: 1.2rem; font-weight: 700;">📊 數據驅動</h3>
+                        <p style="color: #333333; line-height: 1.8;">
+                            所有決策基於歷史數據和 AI 模型，確保預測準確性和決策科學性。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2026 Retail AI Intelligence. 零售人力決策系統。</p>
+    </footer>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: "default",
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true
+            }
+        });
+        mermaid.contentLoaded();
+    </script>
+</body>
+</html>

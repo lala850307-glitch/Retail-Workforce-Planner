@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智慧排班預測 - Retail AI Intelligence</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">RETAIL AI</div>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link">首頁</a></li>
+                <li><a href="architecture.html" class="nav-link">系統架構圖</a></li>
+                <li><a href="audit.html" class="nav-link">人力效率審計</a></li>
+                <li><a href="forecast.html" class="nav-link active">智慧排班預測</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container">
+        <section style="padding: 5rem 0;">
+            <h1 style="font-size: 3.5rem; font-weight: 700; color: #1a1a1a; margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem; letter-spacing: -0.01em;">
+                <span style="font-size: 2.5rem;">🔮</span>
+                智慧排班預測
+            </h1>
+            <p style="font-size: 1.1rem; color: #333333; margin-bottom: 3rem; line-height: 1.8;">
+                結合歷史業績與 AI 模型，自動產出最優化的人力需求排班預測
+            </p>
+
+            <!-- Forecast Form -->
+            <div class="card" style="margin-bottom: 2rem;">
+                <div class="card-header">
+                    <h2>排班預測設定</h2>
+                </div>
+
+                <form id="forecastForm" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
+                    <div class="form-group">
+                        <label class="form-label">店別</label>
+                        <select id="storeId" class="form-select" onchange="updateLYAOV()">
+                            <option value="1">忠孝門市 #1</option>
+                            <option value="2" selected>忠孝Sogo #2</option>
+                            <option value="3">復興Sogo #3</option>
+                            <option value="4">敦化Sogo #4</option>
+                            <option value="5">天母Sogo #5</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">月份</label>
+                        <select id="month" class="form-select" onchange="updateLYAOV()">
+                            <option value="1">1月</option>
+                            <option value="2">2月</option>
+                            <option value="3">3月</option>
+                            <option value="4" selected>4月</option>
+                            <option value="5">5月</option>
+                            <option value="6">6月</option>
+                            <option value="7">7月</option>
+                            <option value="8">8月</option>
+                            <option value="9">9月</option>
+                            <option value="10">10月</option>
+                            <option value="11">11月</option>
+                            <option value="12">12月</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">月業績目標 ($)</label>
+                        <input type="number" id="goal" class="form-input" value="3000000" placeholder="3000000">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">設定今年 AOV ($)</label>
+                        <input type="number" id="targetAOV" class="form-input" placeholder="請參考下方數據">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="grid-column: 1 / -1; padding: 1rem; font-size: 1rem;">
+                        執行規劃
+                    </button>
+                </form>
+
+                <!-- AOV Display Area -->
+                <div id="aovDisplayArea" style="display: none; padding: 1.5rem; background: linear-gradient(135deg, #ffffff 0%, #faf8f6 25%, #f5f0eb 50%, #faf8f6 75%, #ffffff 100%); border-left: 5px solid var(--dark-red); border-radius: 8px; margin-bottom: 1.5rem; background-attachment: fixed;">
+                    <p style="color: #333333; font-weight: 600; margin: 0;">💡 去年同期平均 AOV: <span style="color: var(--dark-red); font-weight: 700;" id="lyAovValue">--</span></p>
+                </div>
+            </div>
+
+            <!-- Forecast Results Table -->
+            <div id="resultsContainer" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>排班預測結果</h2>
+                    </div>
+
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
+                            <thead>
+                                <tr style="background: linear-gradient(135deg, #420d09 0%, #5a1a12 50%, #420d09 100%); color: #ffffff;">
+                                    <th style="padding: 1rem; text-align: left; font-weight: 700;">日期</th>
+                                    <th style="padding: 1rem; text-align: center; font-weight: 700;">星期</th>
+                                    <th style="padding: 1rem; text-align: center; font-weight: 700;">預計業績</th>
+                                    <th style="padding: 1rem; text-align: center; font-weight: 700;">預計成交</th>
+                                    <th style="padding: 1rem; text-align: center; font-weight: 700;">早班</th>
+                                    <th style="padding: 1rem; text-align: center; font-weight: 700;">中班</th>
+                                    <th style="padding: 1rem; text-align: center; font-weight: 700;">晚班</th>
+                                    <th style="padding: 1rem; text-align: center; font-weight: 700; background: var(--dark-red);">全天建議</th>
+                                </tr>
+                            </thead>
+                            <tbody id="forecastTableBody">
+                                <!-- 動態生成的行 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" style="text-align: center; padding: 3rem; color: #333333;">
+                <p style="font-size: 1.1rem; margin-bottom: 1rem;">📊 請填寫上方表單並點擊「執行規劃」開始排班預測</p>
+                <p style="font-size: 0.95rem; color: #666666;">系統將根據您的店別、月份、業績目標和 AOV 設定，自動生成最優化的排班方案</p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2026 Retail AI Intelligence. 零售人力決策系統。</p>
+    </footer>
+
+    <script>
+        // 初始化：加載去年 AOV 數據
+        async function updateLYAOV() {
+            const storeId = document.getElementById('storeId').value;
+            const month = document.getElementById('month').value;
+            const aovArea = document.getElementById('aovDisplayArea');
+            
+            aovArea.style.display = 'block';
+            document.getElementById('lyAovValue').innerText = '⏳ 正在查詢...';
+
+            try {
+                // TODO: 替換為您的實際 API 端點
+                // const response = await fetch(`YOUR_API_URL/api/get_ly_aov?store_id=${storeId}&month=${month}`);
+                // const data = await response.json();
+
+                // 暫時使用模擬數據
+                const mockData = {
+                    store_id: storeId,
+                    month: month,
+                    aov: Math.floor(Math.random() * 300 + 700)
+                };
+
+                document.getElementById('lyAovValue').innerText = '$' + mockData.aov.toLocaleString();
+                document.getElementById('targetAOV').placeholder = '去年平均: $' + mockData.aov.toLocaleString();
+            } catch (e) {
+                console.error("查詢失敗", e);
+                document.getElementById('lyAovValue').innerText = '無法取得數據';
+            }
+        }
+
+        // 執行規劃
+        document.getElementById('forecastForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const storeId = document.getElementById('storeId').value;
+            const month = document.getElementById('month').value;
+            const goal = parseFloat(document.getElementById('goal').value);
+            const targetAOV = parseFloat(document.getElementById('targetAOV').value);
+
+            if (!targetAOV) {
+                alert('請輸入目標 AOV');
+                return;
+            }
+
+            try {
+                // TODO: 替換為您的實際 API 端點
+                // const response = await fetch('YOUR_API_URL/api/forecast_scheduling', {
+                //     method: 'POST',
+                //     headers: { 'Content-Type': 'application/json' },
+                //     body: JSON.stringify({
+                //         store_id: storeId,
+                //         month: month,
+                //         goal: goal,
+                //         target_aov: targetAOV
+                //     })
+                // });
+                // const results = await response.json();
+
+                // 暫時使用模擬數據
+                const results = generateMockForecast(month, goal, targetAOV);
+
+                displayResults(results);
+            } catch (e) {
+                console.error("規劃執行失敗", e);
+                alert('規劃執行失敗，請稍後重試');
+            }
+        });
+
+        // 生成模擬預測數據
+        function generateMockForecast(month, goal, aov) {
+            const daysInMonth = new Date(2026, month, 0).getDate();
+            const results = [];
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(2026, month - 1, day);
+                const dayOfWeek = ['日', '一', '二', '三', '四', '五', '六'][date.getDay()];
+                const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+                
+                const dailyGoal = goal / daysInMonth;
+                const variance = 0.8 + Math.random() * 0.4;
+                const sales = Math.floor(dailyGoal * variance);
+                const transactions = Math.floor(sales / aov);
+                
+                const baseStaff = isWeekend ? 8 : 6;
+                const staffVariance = 0.9 + Math.random() * 0.2;
+                const totalStaff = Math.ceil(baseStaff * staffVariance);
+
+                results.push({
+                    date: `2026-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`,
+                    dayOfWeek: dayOfWeek,
+                    isWeekend: isWeekend,
+                    sales: sales,
+                    transactions: transactions,
+                    morning: Math.ceil(totalStaff * 0.3),
+                    afternoon: Math.ceil(totalStaff * 0.35),
+                    evening: Math.ceil(totalStaff * 0.35),
+                    totalStaff: totalStaff
+                });
+            }
+
+            return results;
+        }
+
+        // 顯示結果
+        function displayResults(results) {
+            const tableBody = document.getElementById('forecastTableBody');
+            const emptyState = document.getElementById('emptyState');
+            const resultsContainer = document.getElementById('resultsContainer');
+
+            tableBody.innerHTML = '';
+
+            results.forEach(r => {
+                const row = document.createElement('tr');
+                row.style.borderBottom = '1px solid #e0e0e0';
+                
+                const weekendClass = r.isWeekend ? 'style="color: var(--dark-red); font-weight: 700;"' : '';
+
+                row.innerHTML = `
+                    <td style="padding: 1rem; text-align: left; color: #333333;">${r.date}</td>
+                    <td ${weekendClass} style="padding: 1rem; text-align: center; color: #333333;">${r.dayOfWeek}</td>
+                    <td style="padding: 1rem; text-align: center; color: #333333;">$${r.sales.toLocaleString()}</td>
+                    <td style="padding: 1rem; text-align: center; color: #333333;">${r.transactions}</td>
+                    <td style="padding: 1rem; text-align: center; color: #333333;">${r.morning}</td>
+                    <td style="padding: 1rem; text-align: center; color: #333333;">${r.afternoon}</td>
+                    <td style="padding: 1rem; text-align: center; color: #333333;">${r.evening}</td>
+                    <td style="padding: 1rem; text-align: center; font-weight: 700; background: linear-gradient(135deg, #420d09 0%, #5a1a12 50%, #420d09 100%); color: #ffffff;">${r.totalStaff}人</td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            emptyState.style.display = 'none';
+            resultsContainer.style.display = 'block';
+        }
+
+        // 頁面加載時初始化
+        window.addEventListener('load', () => {
+            updateLYAOV();
+        });
+    </script>
+</body>
+</html>

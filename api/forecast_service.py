@@ -208,12 +208,12 @@ def home():
     info = f"<div class='info-box'>💡 去年同期參考 AOV 為 <span style='color:#27ae60; font-weight:bold;'>${ly_aov:,}</span></div>"
     return LAYOUT.format(month_options=get_month_opts(), initial_info=info, content="")
 
-@router.get("/api/get_ly_aov")
+@router.get("/get_ly_aov")
 async def api_aov(store_id: int, month: int):
     val = get_db_ly_aov(store_id, month)
     return JSONResponse({"aov": val})
 
-@router.post("/forecast/run", response_class=HTMLResponse)
+@router.post("/run", response_class=HTMLResponse)
 def run(store_id: int = Form(...), month: int = Form(...), goal: int = Form(...), target_aov: str = Form(...)):
     ly_aov = get_db_ly_aov(store_id, month)
     final_aov = int(target_aov) if target_aov and target_aov.strip() else ly_aov

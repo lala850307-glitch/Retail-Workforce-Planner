@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人力效率審計 - Retail AI Intelligence</title>
+    <link rel="stylesheet" href="{{ url_for('stylesheet', path='styles.css') }}">
+    <style>
+        /* 繼承第二個檔案的風格核心 */
+        body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; background: #f0f2f5; margin: 0; padding: 0; }
+        .container { max-width: 1100px; margin: auto; padding: 20px; }
+        
+        /* 導航列補丁：確保不被 body 背景影響 */
+        .navbar { background: #1a1a1a; } 
+
+        .card { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .header-title { display: flex; align-items: center; margin-bottom: 25px; border-bottom: 3px solid #1a2a6c; padding-bottom: 15px; }
+        .header-title h1 { font-size: 28px; color: #1a2a6c; margin: 0; }
+        
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        
+        /* 基準數據區塊 */
+        .benchmark-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #eef0f2; }
+        .bench-item { text-align: center; border-right: 1px solid #dee2e6; }
+        .bench-item:last-child { border: none; }
+        .bench-item span { font-size: 13px; color: #7f8c8d; display: block; margin-bottom: 8px; font-weight: bold; }
+        .bench-item b { font-size: 22px; color: #2c3e50; }
+
+        /* 輸入群組 */
+        .input-group { margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f1f1; }
+        .input-group label { font-weight: bold; color: #34495e; }
+        input { width: 120px; padding: 10px; border: 2px solid #ecf0f1; border-radius: 8px; text-align: center; font-size: 16px; background: #fff; transition: border 0.3s; }
+        input:focus { border-color: #27ae60; outline: none; }
+
+        /* 按鈕樣式 */
+        .btn-exec { width: 100%; padding: 18px; background: #27ae60; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 20px; font-weight: bold; transition: all 0.3s; margin-top: 15px; }
+        .btn-exec:hover { background: #2ecc71; transform: translateY(-2px); }
+
+        /* 結果面板 - 深色主題 */
+        .result-panel { background: #2c3e50; color: white; border-radius: 12px; padding: 25px; display: flex; flex-direction: column; }
+        .res-val { font-size: 34px; font-weight: bold; margin: 12px 0; }
+        .res-label { font-size: 14px; color: #bdc3c7; }
+        
+        /* AI 診斷盒 */
+        .insight-box { background: rgba(255,255,255,0.08); border-radius: 10px; padding: 20px; margin-top: 25px; font-size: 15px; line-height: 1.8; color: #ecf0f1; border-left: 5px solid #f1c40f; }
+        
+        /* 說明區塊 */
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+        .info-item h3 { color: #1a2a6c; border-left: 4px solid #1a2a6c; padding-left: 10px; font-size: 18px; }
+        .info-item p { color: #555; line-height: 1.6; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">RETAIL AI</div>
+            <ul class="nav-menu">
+                <li><a href="/" class="nav-link">首頁</a></li>
+                <li><a href="/system_architecture" class="nav-link">系統架構圖</a></li>
+                <li><a href="/Labor_Efficiency_Audit" class="nav-link active">人力效率審計</a></li>
+                <li><a href="/pages/forecast" class="nav-link">智慧排班預測</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="header-title">
+            <h1>📈 人力效率審計與診斷</h1>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-top:0; color: #1a2a6c; border-bottom: 1px solid #eee; padding-bottom: 10px;">2026 Q1 原始現況與診斷</h3>
+            <div class="benchmark-grid">
+                <div class="bench-item"><span>原始成交率</span><b id="oCR">--</b></div>
+                <div class="bench-item"><span>原始客單價</span><b id="oAOV">--</b></div>
+                <div class="bench-item"><span>平均 FT 人數</span><b id="oFT">--</b></div>
+                <div class="bench-item"><span>平均 PT 人數</span><b id="oPT">--</b></div>
+            </div>
+            
+            <div class="grid">
+                <div style="text-align: center; background: #fff5f5; padding: 15px; border-radius: 10px; border: 1px solid #ffdada;">
+                    <span style="color: #c0392b; font-weight:bold; font-size: 14px;">預計季度薪資浪費</span>
+                    <div class="res-val" id="oCost" style="color: #e74c3c;">$ --</div>
+                </div>
+                <div style="text-align: center; background: #fffaf0; padding: 15px; border-radius: 10px; border: 1px solid #ffe8cc;">
+                    <span style="color: #d35400; font-weight:bold; font-size: 14px;">總計低效權重時數</span>
+                    <div class="res-val" id="oHours" style="color: #f39c12;">-- 小時</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <h3 style="margin-top:0; color: #27ae60; border-bottom: 1px solid #eee; padding-bottom: 10px;">經營策略調整</h3>
+                <form id="auditForm">
+                    <div class="input-group">
+                        <label>目標成交率 (CR %)</label>
+                        <input type="number" id="inCR" step="0.1" placeholder="例: 15.5">
+                    </div>
+                    <div class="input-group">
+                        <label>目標客單價 (AOV $)</label>
+                        <input type="number" id="inAOV" placeholder="例: 850">
+                    </div>
+                    <div class="input-group">
+                        <label>調整後平均 FT (位)</label>
+                        <input type="number" id="inFT" step="0.1" placeholder="例: 8">
+                    </div>
+                    <div class="input-group">
+                        <label>調整後平均 PT (位)</label>
+                        <input type="number" id="inPT" step="0.1" placeholder="例: 4">
+                    </div>
+                    <button type="submit" class="btn-exec">執行決策模擬</button>
+                </form>
+            </div>
+
+            <div class="result-panel">
+                <div style="padding: 10px; text-align: center;">
+                    <span class="res-label">業績預計成長 (季度)</span>
+                    <div class="res-val" id="resRev" style="color: #2ecc71;">+$ 0</div>
+                    
+                    <span class="res-label">人力成本節省 (季度)</span>
+                    <div class="res-val" id="resCost" style="color: #3498db;">+$ 0</div>
+                    
+                    <hr style="border-color: rgba(255,255,255,0.1); margin: 20px 0;">
+                    
+                    <span style="font-size: 18px; color: #f1c40f; font-weight:bold;">預計總經濟價值</span>
+                    <div class="res-val" id="resTotal" style="font-size: 52px; color: #f1c40f;">$ 0</div>
+                </div>
+
+                <div id="insightSection" style="display:none; padding: 0 15px 15px 15px;">
+                    <div class="insight-box">
+                        <div style="font-weight: bold; margin-bottom: 12px; color: #f1c40f; font-size: 17px;">🤖 AI 策略診斷報告：</div>
+                        <div id="resInsight"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top: 10px;">
+            <h3 style="margin-top:0; color: #1a2a6c; border-bottom: 1px solid #eee; padding-bottom: 10px;">審計說明</h3>
+            <div class="info-grid">
+                <div class="info-item">
+                    <h3>📊 現況診斷</h3>
+                    <p>系統自動加載門市基準數據，計算當前薪資浪費與低效工時。</p>
+                </div>
+                <div class="info-item">
+                    <h3>🎯 決策模擬</h3>
+                    <p>模擬目標調整對業績與成本的影響，計算預計經濟價值。</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // 完全保留你要求的計算邏輯
+        async function init() {
+    try {
+        const r = await fetch('/api/init_benchmark');
+        if (!r.ok) throw new Error("後端 API 無回應");
+        
+        const d = await r.json();
+        if (d.error) { alert(d.error); return; }
+        
+        // 加上 || 0 確保即使後端沒給資料，toLocaleString() 也寫得出來
+        document.getElementById('oCR').innerText = (d.cr || 0) + ' %';
+        document.getElementById('oAOV').innerText = '$' + (d.aov || 0).toLocaleString();
+        document.getElementById('oFT').innerText = d.ft || 0;
+        document.getElementById('oPT').innerText = d.pt || 0;
+        document.getElementById('oCost').innerText = '$' + (d.waste_cost || 0).toLocaleString();
+        document.getElementById('oHours').innerText = (d.waste_hours || 0).toLocaleString() + ' 小時';
+
+        document.getElementById('inCR').value = d.cr || 0;
+        document.getElementById('inAOV').value = d.aov || 0;
+        document.getElementById('inFT').value = d.ft || 0;
+        document.getElementById('inPT').value = d.pt || 0;
+    } catch (e) { 
+        console.error("初始化失敗", e); 
+        // 不要只在 Console 報錯，這樣使用者不知道出事了
+        alert("基準數據加載失敗，請檢查網路連線或後端服務。");
+    }
+}
+
+        document.getElementById('auditForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const body = {
+                target_cr: parseFloat(document.getElementById('inCR').value),
+                target_aov: parseFloat(document.getElementById('inAOV').value),
+                new_ft: parseFloat(document.getElementById('inFT').value),
+                new_pt: parseFloat(document.getElementById('inPT').value)
+            };
+
+            try {
+                const r = await fetch('/api/simulate_decision', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(body)
+                });
+                const res = await r.json();
+                
+                document.getElementById('resRev').innerText = (res.rev_growth >= 0 ? '+$ ' : '-$ ') + Math.abs(res.rev_growth).toLocaleString();
+                document.getElementById('resCost').innerText = (res.cost_saved >= 0 ? '+$ ' : '-$ ') + Math.abs(res.cost_saved).toLocaleString();
+                document.getElementById('resTotal').innerText = (res.total_benefit >= 0 ? '$ ' : '-$ ') + Math.abs(res.total_benefit).toLocaleString();
+                document.getElementById('resInsight').innerHTML = res.insights;
+                document.getElementById('insightSection').style.display = 'block';
+            } catch (e) { console.error("模擬執行失敗", e); }
+        });
+
+        init();
+    </script>
+</body>
+</html>

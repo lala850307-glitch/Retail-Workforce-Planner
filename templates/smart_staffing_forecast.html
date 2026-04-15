@@ -3,30 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <title>🔮 AI 門市智慧排班預測</title>
-    <style>
-        /* 💡 修正 1：CSS 恢復成正常的單括號 */
-        :root { --primary: #2c3e50; --accent: #3498db; --bg: #f4f7f6; --border: #e0e0e0; --danger: #e74c3c; }
-        body { font-family: 'PingFang TC', sans-serif; background: var(--bg); color: #333; margin: 0; padding: 20px; }
-        .container { max-width: 1200px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        .nav-bar { display: flex; gap: 15px; align-items: flex-end; margin-bottom: 25px; padding: 20px; border: 1px solid var(--border); border-radius: 8px; background: #fff; flex-wrap: wrap; }
-        .info-box { background: #eef7ff; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 5px solid var(--accent); }
-        .campaign-box { background: #fff5f5; border-left: 5px solid var(--danger); padding: 15px; border-radius: 8px; margin-bottom: 20px; color: var(--danger); font-weight: bold; }
-        .form-group { display: flex; flex-direction: column; gap: 5px; }
-        label { font-size: 11px; font-weight: bold; color: #7f8c8d; }
-        select, input { padding: 10px; border: 1px solid var(--border); border-radius: 4px; width: 160px; outline: none; }
-        button { background: var(--accent); color: white; border: none; padding: 10px 30px; border-radius: 4px; cursor: pointer; font-weight: bold; height: 42px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { background: #f8f9fa; color: var(--primary); padding: 15px; border-bottom: 2px solid var(--border); }
-        td { padding: 12px; border-bottom: 1px solid var(--border); text-align: center; }
-        .weekend { color: var(--danger); font-weight: bold; }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('stylesheet', path='styles.css') }}">
 </head>
 <body>
-    <div class="container">
-        <h2>系統 </h2>
-        <form method="post" action="/forecast/run" class="nav-bar">
-            <div class="form-group"><label>店別</label>
-                <select name="store_id" id="store_id" onchange="updateLYAOV()">
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">RETAIL AI</div>
+            <ul class="nav-menu">
+                <li><a href="/" class="nav-link">首頁</a></li>
+                <li><a href="/system_architecture" class="nav-link">系統架構圖</a></li>
+                <li><a href="/Labor_Efficiency_Audit" class="nav-link">人力效率審計</a></li>
+                <li><a href="/pages/forecast" class="nav-link active">智慧排班預測</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <section class="hero">
+            <p class="hero-label">智慧排班預測</p>
+            <h1 class="hero-title">🔮 AI 門市智慧排班預測</h1>
+            <p class="hero-description">結合歷史業績與 AI 模型，自動產出最優化的人力需求排班預測。</p>
+        </section>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>排班預測設定</h2>
+            </div>
+            <form method="post" action="/forecast/run">
+                <div class="form-group"><label>店別</label>
+                <select class="form-select" name="store_id" id="store_id" onchange="updateLYAOV()">
                     <option value="1" {% if store_id == 1 %}selected{% endif %}>忠孝門市 #1</option>
                     <option value="2" {% if store_id == 2 or not store_id %}selected{% endif %}>忠孝Sogo #2</option>
                     <option value="3" {% if store_id == 3 %}selected{% endif %}>復興Sogo #3</option>
@@ -36,14 +41,15 @@
             </div>
             
             <div class="form-group"><label>月份</label>
-                <select name="month" id="month" onchange="updateLYAOV()">
+                <select class="form-select" name="month" id="month" onchange="updateLYAOV()">
                     {{ month_options | safe }}
                 </select>
             </div>
-            <div class="form-group"><label>月業績目標</label><input type="number" name="goal" value="{{ goal | default(3000000) }}"></div>
-            <div class="form-group"><label>設定今年 AOV</label><input type="number" name="target_aov" id="target_aov" value="{{ final_aov | default('') }}" placeholder="請參考下方數據"></div>
-            <button type="submit">執行規劃</button>
-        </form>
+            <div class="form-group"><label>月業績目標</label><input class="form-input" type="number" name="goal" value="{{ goal | default(3000000) }}"></div>
+            <div class="form-group"><label>設定今年 AOV</label><input class="form-input" type="number" name="target_aov" id="target_aov" value="{{ final_aov | default('') }}" placeholder="請參考下方數據"></div>
+                <button class="btn btn-primary" type="submit">執行規劃</button>
+            </form>
+        </div>
         
         <div id="aov_display_area">
             {% if mode_text %}
@@ -75,7 +81,7 @@
         </table>
         {% endif %}
 
-    </div>
+    </main>
     <script>
         async function updateLYAOV() {
             // 💡 修正 1：JS 恢復正常的單括號
@@ -85,7 +91,7 @@
             displayArea.innerHTML = '<div class="info-box">⏳ 正在查詢去年數據...</div>';
             try {
                 // 💡 修正 2：JS 變數恢復正常的 ${var} 寫法
-                const res = await fetch(`/forecast/api/get_ly_aov?store_id=${sid}&month=${m}`);
+                const res = await fetch(`/forecast/get_ly_aov?store_id=${sid}&month=${m}`);
                 const data = await res.json();
                 displayArea.innerHTML = `<div class="info-box">💡 去年同期平均 AOV 為 <span style="color:#27ae60; font-weight:bold;">$${data.aov.toLocaleString()}</span></div>`;
                 document.getElementById('target_aov').placeholder = `去年平均: ${data.aov}`;
