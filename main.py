@@ -118,7 +118,7 @@ async def get_architecture_page(request: Request):
 async def get_audit_page(request: Request):
     return templates.TemplateResponse("labor_efficiency_audit.html", {"request": request})
 
-@app.get("/pages/forecast", tags=["頁面導覽"])
+@app.get("/smart_staffing_forecast", tags=["頁面導覽"])
 async def get_forecast_page(request: Request):
     # 預設參數 (Store 2, April)
     store_id, month = 2, 4
@@ -245,13 +245,13 @@ async def index(request: Request):
     """主首頁入口"""
     return templates.TemplateResponse(request=request, name="index.html")
 
-@app.get("/pages/audit", tags=["頁面導覽"])
+@app.get("/Labor_Efficiency_Audit", tags=["頁面導覽"])
 async def get_audit_page(request: Request):
     """人力審計與業績平衡頁面"""
     # 對應妳的 Labor Efficiency Audit.html
     return templates.TemplateResponse(request=request, name="Labor Efficiency Audit.html")
 
-@app.get("/pages/forecast", tags=["頁面導覽"])
+@app.get("/smart_staffing_forecast", tags=["頁面導覽"])
 async def get_forecast_page(request: Request):
     """智慧排班預測頁面"""
     # 這裡可以根據妳原本的 get_forecast_page 邏輯加入 AOV 查詢
