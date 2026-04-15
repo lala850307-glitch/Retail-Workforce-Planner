@@ -5,7 +5,7 @@ import numpy as np
 from sqlalchemy import create_engine
 from dotenv import load_dotenv
 # 確保這裡包含 compute_ideal_staffing_v2，如果你的原本檔案沒有，我下面會補定義
-from 清洗與模型生成 import build_advanced_features, generate_audit_scenarios, validate_input
+from model_training_pipeline import build_advanced_features, generate_audit_scenarios, validate_input
 
 load_dotenv()
 

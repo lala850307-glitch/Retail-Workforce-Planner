@@ -8,17 +8,18 @@ from fastapi import FastAPI, Form, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 import uvicorn
 import calendar
+from fastapi import APIRouter, Form, Request
 
 # ======================
 # 1. 初始化與路徑設定
 # ======================
 load_dotenv()
-app = FastAPI(title="Retail Planning System - Full Edition")
+router = APIRouter()
 engine = create_engine(os.getenv("POSTGRESQL_URL"))
 
 # 請確保路徑與你的電腦一致
-MODEL_PATH = "/Users/laylatang8537/Documents/.vscode/門市人力配置/模型/retail_staffing_model_v1.pkl"
-FEAT_PATH = "/Users/laylatang8537/Documents/.vscode/門市人力配置/模型/feature_columns.pkl"
+MODEL_PATH = "/Users/laylatang8537/Documents/vscold/Retail-Workforce-Planner/Retail-Workforce-Planner/models/retail_staffing_model_v1.pkl"
+FEAT_PATH = "/Users/laylatang8537/Documents/vscold/Retail-Workforce-Planner/Retail-Workforce-Planner/models/feature_columns.pkl"
 
 model = joblib.load(MODEL_PATH)
 feature_cols = joblib.load(FEAT_PATH)
@@ -201,18 +202,18 @@ LAYOUT = """
 # ======================
 # 5. API 路由
 # ======================
-@app.get("/", response_class=HTMLResponse)
+@router.get("/", response_class=HTMLResponse)
 def home():
     ly_aov = get_db_ly_aov(2, 4)
     info = f"<div class='info-box'>💡 去年同期參考 AOV 為 <span style='color:#27ae60; font-weight:bold;'>${ly_aov:,}</span></div>"
     return LAYOUT.format(month_options=get_month_opts(), initial_info=info, content="")
 
-@app.get("/api/get_ly_aov")
+@router.get("/api/get_ly_aov")
 async def api_aov(store_id: int, month: int):
     val = get_db_ly_aov(store_id, month)
     return JSONResponse({"aov": val})
 
-@app.post("/run", response_class=HTMLResponse)
+@router.post("/forecast/run", response_class=HTMLResponse)
 def run(store_id: int = Form(...), month: int = Form(...), goal: int = Form(...), target_aov: str = Form(...)):
     ly_aov = get_db_ly_aov(store_id, month)
     final_aov = int(target_aov) if target_aov and target_aov.strip() else ly_aov
@@ -231,4 +232,15 @@ def run(store_id: int = Form(...), month: int = Form(...), goal: int = Form(...)
     return LAYOUT.format(month_options=get_month_opts(month), initial_info=header_info, content=table)
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    import uvicorn
+    from fastapi import FastAPI
+    
+    # 💡 建立一個臨時的 App
+    test_app = FastAPI()
+    
+    # 💡 把零件 (router) 裝上去
+    test_app.include_router(router)
+    
+    # 💡 執行這個臨時 App
+    print("🚀 正在以單獨模式啟動 Audit Service...")
+    uvicorn.run(test_app, host="127.0.0.1", port=8000)
