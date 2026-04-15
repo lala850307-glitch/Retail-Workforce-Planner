@@ -166,7 +166,7 @@ LAYOUT = """
 <body>
     <div class="container">
         <h2>系統 </h2>
-        <form method="post" action="/run" class="nav-bar">
+        <form method="post" action="/forecast/run" class="nav-bar">
             <div class="form-group"><label>店別</label>
                 <select name="store_id" id="store_id" onchange="updateLYAOV()">
                     <option value="1">忠孝門市 #1</option><option value="2" selected>忠孝Sogo #2</option>
@@ -232,15 +232,4 @@ def run(store_id: int = Form(...), month: int = Form(...), goal: int = Form(...)
     return LAYOUT.format(month_options=get_month_opts(month), initial_info=header_info, content=table)
 
 if __name__ == "__main__":
-    import uvicorn
-    from fastapi import FastAPI
-    
-    # 💡 建立一個臨時的 App
-    test_app = FastAPI()
-    
-    # 💡 把零件 (router) 裝上去
-    test_app.include_router(router)
-    
-    # 💡 執行這個臨時 App
-    print("🚀 正在以單獨模式啟動 Audit Service...")
-    uvicorn.run(test_app, host="127.0.0.1", port=8000)
+    uvicorn.run(router, host="0.0.0.0", port=8000)
