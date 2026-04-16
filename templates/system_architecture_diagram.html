@@ -137,63 +137,63 @@
                 <div class="mermaid">
 flowchart TD
 
-subgraph group_ui["Presentation"]
-  node_index_page["Home page<br/>template<br/>[index.html]"]
-  node_forecast_page["Forecast UI<br/>template"]
-  node_audit_page["Audit UI<br/>template"]
-  node_retail_js["Browser JS<br/>client script<br/>[retail.js]"]
+subgraph group_ui["呈現層 (Presentation)"]
+  node_index_page["首頁模板<br/>[index.html]"]
+  node_forecast_page["預測介面模板<br/>[forecast UI]"]
+  node_audit_page["審計介面模板<br/>[audit UI]"]
+  node_retail_js["瀏覽器 JS<br/>客戶端腳本<br/>[retail.js]"]
 end
 
-subgraph group_services["Runtime Services"]
-  node_main["Main app<br/>entrypoint<br/>[main.py]"]
-  node_forecast_service["Forecast API"]
-  node_audit_service["Audit API<br/>[audit_service.py]"]
+subgraph group_services["運行服務 (Runtime Services)"]
+  node_main["主程式入口<br/>[main.py]"]
+  node_forecast_service["預測 API"]
+  node_audit_service["審計 API<br/>[audit_service.py]"]
 end
 
-subgraph group_offline["Offline Pipelines"]
-  node_train_pipeline["Training pipeline<br/>ml pipeline"]
-  node_forecast_engine["Batch forecast<br/>batch job"]
-  node_data_simulator["Data simulator"]
-  node_master_data["Master data<br/>data generator<br/>[gen_master_data.py]"]
-  node_ops_2025["2025 ops<br/>data generator<br/>[gen_2025_ops.py]"]
-  node_ops_2026["2026 ops<br/>data generator<br/>[gen_2026_ops.py]"]
+subgraph group_offline["離線流水線 (Offline Pipelines)"]
+  node_train_pipeline["模型訓練流水線<br/>ML pipeline"]
+  node_forecast_engine["批次預測引擎<br/>Batch job"]
+  node_data_simulator["數據模擬器"]
+  node_master_data["主數據生成<br/>[gen_master_data.py]"]
+  node_ops_2025["2025 營運數據生成<br/>[gen_2025_ops.py]"]
+  node_ops_2026["2026 營運數據生成<br/>[gen_2026_ops.py]"]
 end
 
-subgraph group_artifacts["Model Artifacts"]
-  node_model_file[("Model pickle<br/>artifact")]
-  node_feature_file[("Feature schema<br/>artifact")]
-  node_output_csv["Forecast CSV<br/>batch output"]
+subgraph group_artifacts["模型產出物 (Model Artifacts)"]
+  node_model_file[("模型 Pickle<br/>封裝檔")]
+  node_feature_file[("特徵結構<br/>封裝檔")]
+  node_output_csv["預測結果 CSV<br/>批次輸出"]
 end
 
-node_main -->|"serves"| node_index_page
-node_main -->|"serves"| node_forecast_page
-node_main -->|"serves"| node_audit_page
+node_main -->|"服務"| node_index_page
+node_main -->|"服務"| node_forecast_page
+node_main -->|"服務"| node_audit_page
 
-node_forecast_page -->|"uses"| node_retail_js
-node_audit_page -->|"uses"| node_retail_js
+node_forecast_page -->|"使用"| node_retail_js
+node_audit_page -->|"使用"| node_retail_js
 
-node_main -->|"calls"| node_forecast_service
-node_main -->|"calls"| node_audit_service
+node_main -->|"調用"| node_forecast_service
+node_main -->|"調用"| node_audit_service
 
-node_forecast_service -->|"loads"| node_model_file
-node_forecast_service -->|"loads"| node_feature_file
+node_forecast_service -->|"載入"| node_model_file
+node_forecast_service -->|"載入"| node_feature_file
 
-node_audit_service -.->|"reuses"| node_forecast_service
+node_audit_service -.->|"複用"| node_forecast_service
 
-node_train_pipeline -->|"trains on"| node_master_data
-node_train_pipeline -->|"ingests"| node_ops_2025
-node_train_pipeline -->|"ingests"| node_ops_2026
+node_train_pipeline -->|"訓練於"| node_master_data
+node_train_pipeline -->|"攝取"| node_ops_2025
+node_train_pipeline -->|"攝取"| node_ops_2026
 
-node_train_pipeline -->|"writes"| node_model_file
-node_train_pipeline -->|"writes"| node_feature_file
+node_train_pipeline -->|"寫入"| node_model_file
+node_train_pipeline -->|"寫入"| node_feature_file
 
-node_data_simulator -->|"generates"| node_ops_2026
+node_data_simulator -->|"生成"| node_ops_2026
 
-node_forecast_engine -->|"uses"| node_model_file
-node_forecast_engine -->|"uses"| node_feature_file
-node_forecast_engine -->|"produces"| node_output_csv
+node_forecast_engine -->|"使用"| node_model_file
+node_forecast_engine -->|"使用"| node_feature_file
+node_forecast_engine -->|"產出"| node_output_csv
 
-node_forecast_engine -.->|"consumes"| node_data_simulator
+node_forecast_engine -.->|"消耗"| node_data_simulator
 
 click node_main "https://github.com/lala850307-glitch/retail-workforce-planner/blob/main/main.py"
 click node_forecast_service "https://github.com/lala850307-glitch/retail-workforce-planner/blob/main/api/forecast_service.py"
@@ -225,7 +225,6 @@ class node_index_page,node_forecast_page,node_audit_page,node_retail_js toneBlue
 class node_main,node_forecast_service,node_audit_service toneAmber
 class node_train_pipeline,node_forecast_engine,node_data_simulator,node_master_data,node_ops_2025,node_ops_2026 toneMint
 class node_model_file,node_feature_file,node_output_csv toneRose
-
                 </div>
             </div>
 
