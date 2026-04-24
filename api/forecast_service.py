@@ -25,7 +25,7 @@ model = joblib.load(MODEL_PATH)
 feature_cols = joblib.load(FEAT_PATH)
 
 # 常規參數 (可依實際需求調整)
-DEFAULT_CAPACITY = 10.0 
+DEFAULT_CAPACITY = 5.0 
 DEFAULT_BUFFERS = {"morning": 1.0, "afternoon": 1.15, "evening": 1.30}
 
 # ======================
@@ -138,6 +138,13 @@ def get_db_ly_aov(store_id, month):
 def get_month_opts(selected=4):
     return "".join([f"<option value='{i}' {'selected' if i==selected else ''}>{i}月</option>" for i in range(1, 13)])
 
+def get_store_opts(selected=2):
+    stores = [
+        (1, "忠孝門市 #1"), (2, "忠孝Sogo #2"),
+        (3, "復興Sogo #3"), (4, "敦化Sogo #4"), (5, "天母Sogo #5")
+    ]
+    return "".join([f"<option value='{v}' {'selected' if int(v)==int(selected) else ''}>{n}</option>" for v, n in stores])
+
 # ======================
 # 4. HTML 模板
 # ======================
@@ -166,16 +173,15 @@ LAYOUT = """
 <body>
     <div class="container">
         <h2>系統 </h2>
-        <form method="post" action="/forecast/run" class="nav-bar">
+        <form method="post" action="./run" class="nav-bar">
             <div class="form-group"><label>店別</label>
                 <select name="store_id" id="store_id" onchange="updateLYAOV()">
-                    <option value="1">忠孝門市 #1</option><option value="2" selected>忠孝Sogo #2</option>
-                    <option value="3">復興Sogo #3</option><option value="4">敦化Sogo #4</option><option value="5">天母Sogo #5</option>
+                    {store_options}
                 </select>
             </div>
             <div class="form-group"><label>月份</label><select name="month" id="month" onchange="updateLYAOV()">{month_options}</select></div>
-            <div class="form-group"><label>月業績目標</label><input type="number" name="goal" value="3000000"></div>
-            <div class="form-group"><label>設定今年 AOV</label><input type="number" name="target_aov" id="target_aov" placeholder="請參考下方數據"></div>
+            <div class="form-group"><label>月業績目標</label><input type="number" name="goal" value="{goal}"></div>
+            <div class="form-group"><label>設定今年 AOV</label><input type="number" name="target_aov" id="target_aov" value="{target_aov}" placeholder="請參考下方數據"></div>
             <button type="submit">執行規劃</button>
         </form>
         <div id="aov_display_area">{initial_info}</div>
@@ -188,12 +194,13 @@ LAYOUT = """
             const displayArea = document.getElementById('aov_display_area');
             displayArea.innerHTML = '<div class="info-box">⏳ 正在查詢去年數據...</div>';
             try {{
-                const res = await fetch(`/api/get_ly_aov?store_id=${{sid}}&month=${{m}}`);
+                const res = await fetch(`./get_ly_aov?store_id=${{sid}}&month=${{m}}`);
                 const data = await res.json();
                 displayArea.innerHTML = `<div class="info-box">💡 去年同期平均 AOV 為 <span style="color:#27ae60; font-weight:bold;">$${{data.aov.toLocaleString()}}</span></div>`;
                 document.getElementById('target_aov').placeholder = `去年平均: ${{data.aov}}`;
             }} catch (e) {{ displayArea.innerHTML = '<div class="info-box" style="color:red;">⚠️ 無法取得去年數據</div>'; }}
         }}
+        window.onload = updateLYAOV;
     </script>
 </body>
 </html>
@@ -206,7 +213,14 @@ LAYOUT = """
 def home():
     ly_aov = get_db_ly_aov(2, 4)
     info = f"<div class='info-box'>💡 去年同期參考 AOV 為 <span style='color:#27ae60; font-weight:bold;'>${ly_aov:,}</span></div>"
-    return LAYOUT.format(month_options=get_month_opts(), initial_info=info, content="")
+    return LAYOUT.format(
+        store_options=get_store_opts(2),
+        month_options=get_month_opts(4), 
+        goal=3000000,
+        target_aov="",
+        initial_info=info, 
+        content=""
+    )
 
 @router.get("/get_ly_aov")
 async def api_aov(store_id: int, month: int):
@@ -229,7 +243,20 @@ def run(store_id: int = Form(...), month: int = Form(...), goal: int = Form(...)
         rows += f"<tr><td>{r['date']}</td><td class='{wk_cls}'>{r['weekday']}</td><td>${r['sales']:,}</td><td>{r['trans']}</td><td>{r['m']}</td><td>{r['a']}</td><td>{r['e']}</td><td style='font-weight:bold;'>{r['staff']}人</td></tr>"
     
     table = f"<table><thead><tr><th>日期</th><th>星期</th><th>預計業績</th><th>預計成交</th><th>早</th><th>中</th><th>晚</th><th>全天建議</th></tr></thead><tbody>{rows}</tbody></table>"
-    return LAYOUT.format(month_options=get_month_opts(month), initial_info=header_info, content=table)
+    
+    return LAYOUT.format(
+        store_options=get_store_opts(store_id),
+        month_options=get_month_opts(month), 
+        goal=goal,
+        target_aov=target_aov,
+        initial_info=header_info, 
+        content=table
+    )
 
 if __name__ == "__main__":
-    uvicorn.run(router, host="0.0.0.0", port=8000)
+    import uvicorn
+    from fastapi import FastAPI
+    test_app = FastAPI()
+    test_app.include_router(router)
+    print("🚀 正在以單獨模式啟動 Forecast Service (http://127.0.0.1:8000)...")
+    uvicorn.run(test_app, host="127.0.0.1", port=8000)
